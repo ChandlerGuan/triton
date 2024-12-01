@@ -29,8 +29,14 @@ struct LocalRecordOpConversion
     const int wordsPerEntry = triton::gpu::getWordsPerProtonEntry();
     const int slots =
         cast<IntegerAttr>(mod->getAttr("triton_gpu.proton-slots")).getInt();
+    // const int numWarpgroup =
+    //     triton::gpu::TritonGPUDialect::getNumWarps(mod) / warpsPerGroup;
+    int wgSpecNum = 1;
+    if (Attribute attr = mod->getAttr("triton_gpu.num-warp-groups-per-cta")){
+      wgSpecNum = cast<IntegerAttr>(attr).getInt();
+    }
     const int numWarpgroup =
-        triton::gpu::TritonGPUDialect::getNumWarps(mod) / warpsPerGroup;
+        triton::gpu::TritonGPUDialect::getNumWarps(mod) * wgSpecNum / warpsPerGroup;
 
     assert(op.getMetric() == triton::ProtonMetric::CYCLE);
 

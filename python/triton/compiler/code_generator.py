@@ -415,12 +415,15 @@ class CodeGenerator(ast.NodeVisitor):
         entry = self.fn.add_entry_block()
         arg_values = []
         idx = 0
+        # print("======")
         for i in range(len(arg_names)):
+            # print(f"{i} {arg_names[i]} ")
             if i in self.constants:
                 cst = self.constants[i]
                 if not _is_constexpr(cst):
                     cst = constexpr(self.constants[i])
                 arg_values.append(cst)
+                # print(f"dropping const {i} {arg_names[i]}")
                 continue
             else:
                 if i in self.attributes:

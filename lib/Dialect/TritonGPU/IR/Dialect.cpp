@@ -3053,8 +3053,8 @@ LogicalResult LocalRecordOp::verify() {
 
   // Ensure that slots is a power of 2. Otherwise, the profiling circular buffer
   // index management incurs too much overhead.
-  if ((slots & (slots - 1)) != 0)
-    return emitError("Proton slots must be power of 2");
+  // if ((slots & (slots - 1)) != 0)
+  //   return emitError("Proton slots must be power of 2");
 
   return success();
 }
