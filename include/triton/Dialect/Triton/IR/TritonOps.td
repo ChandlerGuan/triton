@@ -602,6 +602,12 @@ def TT_GetProgramIdOp : TT_Op<"get_program_id", [Pure]> {
 
     let assemblyFormat = "$axis attr-dict `:` type($result)";
 
+    let builders = [
+      OpBuilder<(ins "int":$axis), [{
+        build($_builder, $_state, $_builder.getI32Type(), ProgramIDDimAttr::get($_builder.getContext(), ProgramIDDim(axis)));
+      }]>
+    ];
+
     let extraClassDeclaration = [{
       int32_t getAxisAsInt() {
         return static_cast<int32_t>(getAxis());
@@ -615,6 +621,11 @@ def TT_GetNumProgramsOp : TT_Op<"get_num_programs", [Pure]> {
     let results = (outs I32:$result);
 
     let assemblyFormat = "$axis attr-dict `:` type($result)";
+    let builders = [
+      OpBuilder<(ins "int":$axis), [{
+        build($_builder, $_state, $_builder.getI32Type(), ProgramIDDimAttr::get($_builder.getContext(), ProgramIDDim(axis)));
+      }]>
+    ];
 
     let extraClassDeclaration = [{
       int32_t getAxisAsInt() {
@@ -844,11 +855,11 @@ def TT_PrintOp : TT_Op<"print", [SameVariadicOperandSize, MemoryEffects<[MemWrit
 def TT_AssertOp : TT_Op<"assert", [MemoryEffects<[MemWrite<GlobalMemory>]>]> {
   let summary = "Device-side assert, as in CUDA for correctness checking";
   let description = [{
-    `tt.assert` takes a condition tensor, a message string, a file string, a function string, and a line number.
+    `tt.assert` takes a condition tensor and a message string.
     If the condition is false, the message is printed, and the program is aborted.
   }];
-  let arguments = (ins TT_Tensor:$condition, StrAttr:$message, StrAttr:$file, StrAttr:$func, I32Attr:$line);
-  let assemblyFormat = "$condition `,` $message `,` $file `,` $func `,` $line attr-dict `:` type($condition)";
+  let arguments = (ins TT_Tensor:$condition, StrAttr:$message);
+  let assemblyFormat = "$condition `,` $message attr-dict `:` type($condition)";
 }
 
 //
@@ -1203,6 +1214,24 @@ def TT_ExperimentalTensormapFenceproxyAcquireOp: TT_Op<
     let assemblyFormat = [{
       $desc_ptr attr-dict `:` qualified(type($desc_ptr))
     }];
+}
+
+def TT_ProtonRecordOp : TT_Op<"proton_record", [DeclareOpInterfaceMethods<MemoryEffectsOpInterface>]> {
+  let summary = "Record a hardware event";
+
+  let description = [{
+    The intra kernel profiler records an event from a special register or a hardware performance counter.
+    Currently only cycle counter is supported.
+  }];
+  let arguments = (
+    ins BoolAttr: $isStart,
+    I32Attr: $regionId,
+    DefaultValuedAttr<TT_ProtonMetricAttr, "triton::ProtonMetric::CYCLE">:$metric,
+    DefaultValuedAttr<TT_ProtonGranularityAttr, "triton::ProtonGranularity::WARPGROUP">:$granularity
+  );
+
+  let hasCustomAssemblyFormat = 1;
+  let hasVerifier = 1;
 }
 
 

@@ -90,7 +90,8 @@ struct ConvertTritonGPUToLLVM
 
     mlir::LowerToLLVMOptions option(context);
     option.overrideIndexBitwidth(32);
-    TritonGPUToLLVMTypeConverter typeConverter(context, option);
+    TargetInfo targetInfo(computeCapability);
+    TritonGPUToLLVMTypeConverter typeConverter(context, option, targetInfo);
     TritonLLVMConversionTarget convTarget(*context);
     int numWarps = triton::gpu::TritonGPUDialect::getNumWarps(mod);
     int numCTAs = triton::gpu::TritonGPUDialect::getNumCTAs(mod);
@@ -111,11 +112,12 @@ struct ConvertTritonGPUToLLVM
     // Lower functions
     {
       mlir::LowerToLLVMOptions option(context);
-      TritonGPUToLLVMTypeConverter typeConverter(context, option);
+      TritonGPUToLLVMTypeConverter typeConverter(context, option, targetInfo);
       TritonLLVMFunctionConversionTarget funcTarget(*context);
       RewritePatternSet funcPatterns(context);
-      mlir::triton::populateFuncOpConversionPattern(
-          typeConverter, funcPatterns, numWarps, patternBenefitDefault);
+      mlir::triton::populateFuncOpConversionPattern(typeConverter, funcPatterns,
+                                                    numWarps, targetInfo,
+                                                    patternBenefitDefault);
       mlir::cf::populateControlFlowToLLVMConversionPatterns(typeConverter,
                                                             funcPatterns);
       if (failed(
@@ -131,7 +133,6 @@ struct ConvertTritonGPUToLLVM
     OpBuilder::InsertPoint indexInsertPoint;
 
     RewritePatternSet patterns(context);
-    TargetInfo targetInfo(computeCapability);
     int benefit = patternBenefitPrioritizeOverLLVMConversions;
     mlir::triton::NVIDIA::populateConvertLayoutOpToLLVMOptimizedPatterns(
         typeConverter, targetInfo, patterns,
@@ -160,8 +161,10 @@ struct ConvertTritonGPUToLLVM
                                                     targetInfo, benefit);
     mlir::triton::populatePrintOpToLLVMPattern(typeConverter, patterns,
                                                targetInfo, benefit);
+    mlir::triton::populateProtonOpToLLVMPattern(typeConverter, patterns,
+                                                targetInfo, benefit);
     mlir::triton::populateControlFlowOpToLLVMPattern(typeConverter, patterns,
-                                                     benefit);
+                                                     targetInfo, benefit);
     mlir::triton::NVIDIA::populateSPMDOpToLLVMPattern(typeConverter, patterns,
                                                       benefit);
     mlir::triton::populateSPMDOpToLLVMPattern(typeConverter, patterns,

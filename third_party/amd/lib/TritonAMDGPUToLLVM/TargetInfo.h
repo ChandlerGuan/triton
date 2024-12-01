@@ -42,18 +42,14 @@ public:
   Value programId(RewriterBase &rewriter, Location loc, ModuleOp moduleOp,
                   int axis) const override;
 
+  Value smId(RewriterBase &rewriter, Location loc) const override;
+
+  Value clock(RewriterBase &rewriter, Location loc,
+              bool isClock64) const override;
+
   bool warpReduce(RewriterBase &rewriter, Location loc, SmallVector<Value> &acc,
                   triton::ReduceOp op, unsigned numLaneToReduce,
                   unsigned interleave) const override;
-
-  bool processReplicaUsingStMatrix(RewriterBase &rewriter, Location loc,
-                                   Value smemBase, SmallVector<Value> &vals,
-                                   RankedTensorType srcTy, Type elemTy,
-                                   ArrayRef<unsigned> paddedRepShape,
-                                   ArrayRef<unsigned> origRepShape,
-                                   ArrayRef<unsigned> outOrd,
-                                   unsigned accumNumReplicates,
-                                   int swizzleByteWidth) const override;
 
   std::string getMulhiFuncName(Type resultElementTy) const override;
 
@@ -65,6 +61,7 @@ public:
 
   void assertFail(RewriterBase &rewriter, Location loc, StringRef message,
                   StringRef file, StringRef func, int line) const override;
+  int getSharedAddressSpace() const override;
 
 private:
   void printfImpl(Value formatStrStart, int formatStrByteCount, ValueRange args,

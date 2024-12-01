@@ -13,6 +13,7 @@ def TT_CacheModifierAttr : I32EnumAttr<
         I32EnumAttrCase<"WB", 4, "wb">,
         I32EnumAttrCase<"CS", 5, "cs">,
         I32EnumAttrCase<"WT", 6, "wt">,
+        I32EnumAttrCase<"CV", 7, "cv">,
     ]> {
     let cppNamespace = "::mlir::triton";
 }
@@ -116,6 +117,26 @@ def TT_InputPrecisionAttr : I32EnumAttr<
       I32EnumAttrCase<"IEEE", 2, "ieee">
     ]>{
   let cppNamespace = "::mlir::triton";
+}
+
+// Proton Profiling Metric.
+def TT_ProtonMetricAttr : I32EnumAttr<
+    "ProtonMetric", "",
+    [
+        I32EnumAttrCase<"CYCLE", 0, "cycle">,
+        I32EnumAttrCase<"INVALID", 1, "invalid">,
+    ]> {
+    let cppNamespace = "::mlir::triton";
+}
+
+// Proton Profiling Granularity.
+def TT_ProtonGranularityAttr : I32EnumAttr<
+    "ProtonGranularity", "",
+    [
+        I32EnumAttrCase<"WARPGROUP", 0, "warpgroup">,
+        I32EnumAttrCase<"WARP", 1, "warp">,
+    ]> {
+    let cppNamespace = "::mlir::triton";
 }
 
 #endif

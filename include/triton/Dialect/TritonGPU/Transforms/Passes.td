@@ -251,4 +251,15 @@ def TritonGPUWSLowering : Pass<"tritongpu-warp-spec-lowering", "mlir::ModuleOp">
            "number of consumer warp groups for warp specialization">
   ];
 }
+def TritonGPUProtonLowering: Pass<"tritongpu-proton-lowering", "mlir::ModuleOp"> {
+  let summary = "Lower the Triton's ProtonRecordOp with scaffolding code (e.g., resource allocation and post processing).";
+
+  let description = "Allocate memory for local profiling buffers and convert the Triton's ProtonRecordOp into "
+                "TritonGPU's LocalRecordOp with resource binded. Before exiting the local profiling buffers "
+                "(with metadata) are copied back to GPU's global memory.";
+
+  let dependentDialects = ["mlir::triton::gpu::TritonGPUDialect",
+                           "mlir::triton::TritonDialect"];
+}
+
 #endif
