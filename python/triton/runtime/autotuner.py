@@ -35,10 +35,10 @@ class Autotuner(KernelInterface):
             'prune_num_stages_by'(optional): a function used to prune num_stages. It takes configs:List[Config] as its input, and returns pruned configs.
         """
         if not configs:
-            self.configs = [Config({}, num_warps=4, num_stages=2, num_ctas=1, num_buffers_warp_spec=0, num_consumer_groups=0, reg_dec_producer=0, reg_inc_consumer=0)]
+            self.configs = [Config({}, num_warps=4, num_stages=2, num_ctas=1, num_buffers_warp_spec=0, num_consumer_groups=0, reg_dec_producer=0, reg_inc_consumer=0, proton_slots=0)]
         else:
             self.configs = configs
-        self.key_idx = [arg_names.index(k) for k in key]
+        self.keys = key
         self.cache = {}
         self.arg_names = arg_names
 
@@ -136,12 +136,9 @@ class Autotuner(KernelInterface):
         used_cached_result = True
         if len(self.configs) > 1:
             all_args = {**self.nargs, **kwargs}
-            _args = []
-            for name in self.arg_names:
-                if name in all_args:
-                    _args.append(all_args[name])
-            key = [_args[i] for i in self.key_idx]
-            for arg in _args:
+            _args = {k: v for (k, v) in all_args.items() if k in self.arg_names}
+            key = [_args[key] for key in self.keys if key in _args]
+            for _, arg in _args.items():
                 if hasattr(arg, "dtype"):
                     key.append(str(arg.dtype))
             key = tuple(key)
@@ -227,7 +224,7 @@ class Config:
                     function are args.
     """
 
-    def __init__(self, kwargs, num_warps=4, num_stages=2, num_ctas=1, num_buffers_warp_spec=0, num_consumer_groups=0, reg_dec_producer=0, reg_inc_consumer=0, maxnreg=None, pre_hook=None):
+    def __init__(self, kwargs, num_warps=4, num_stages=2, num_ctas=1, num_buffers_warp_spec=0, num_consumer_groups=0, reg_dec_producer=0, reg_inc_consumer=0, proton_slots=0, maxnreg=None, pre_hook=None):
         self.kwargs = kwargs
         self.num_warps = num_warps
         self.num_ctas = num_ctas
@@ -236,6 +233,7 @@ class Config:
         self.num_consumer_groups = num_consumer_groups
         self.reg_dec_producer = reg_dec_producer
         self.reg_inc_consumer = reg_inc_consumer
+        self.proton_slots = proton_slots
         self.maxnreg = maxnreg
         self.pre_hook = pre_hook
 
@@ -251,6 +249,7 @@ class Config:
                     ("num_consumer_groups", self.num_consumer_groups),
                     ("reg_dec_producer", self.reg_dec_producer),
                     ("reg_inc_consumer", self.reg_inc_consumer),
+                    ("proton_slots", self.proton_slots),
                     ("maxnreg", self.maxnreg),
                 ) if v is not None
             }
@@ -267,6 +266,7 @@ class Config:
         res.append(f"num_consumer_groups: {self.num_consumer_groups}")
         res.append(f"reg_dec_producer: {self.reg_dec_producer}")
         res.append(f"reg_inc_consumer: {self.reg_inc_consumer}")
+        res.append(f"proton_slots: {self.proton_slots}")
         res.append(f"maxnreg: {self.maxnreg}")
         return ", ".join(res)
 

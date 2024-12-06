@@ -86,6 +86,7 @@ void populateConvertLayoutOpUsingLinearLayoutsToLLVMPattern(
 
 void populateControlFlowOpToLLVMPattern(LLVMTypeConverter &typeConverter,
                                         RewritePatternSet &patterns,
+                                        const TargetInfoBase &targetInfo,
                                         PatternBenefit benefit);
 
 void populateSPMDOpToLLVMPattern(LLVMTypeConverter &typeConverter,
@@ -95,6 +96,7 @@ void populateSPMDOpToLLVMPattern(LLVMTypeConverter &typeConverter,
 
 void populateFuncOpConversionPattern(LLVMTypeConverter &typeConverter,
                                      RewritePatternSet &patterns, int numWarps,
+                                     const TargetInfoBase &targetInfo,
                                      PatternBenefit benefit);
 
 void populatePrintOpToLLVMPattern(LLVMTypeConverter &typeConverter,
@@ -105,6 +107,10 @@ void populatePrintOpToLLVMPattern(LLVMTypeConverter &typeConverter,
 void populateRegReallocOpToLLVMPatterns(LLVMTypeConverter &typeConverter,
                                         RewritePatternSet &patterns,
                                         PatternBenefit benefit);
+void populateProtonOpToLLVMPattern(LLVMTypeConverter &typeConverter,
+                                   RewritePatternSet &patterns,
+                                   const TargetInfoBase &targetInfo,
+                                   PatternBenefit benefit);
 
 } // namespace triton
 } // namespace mlir
